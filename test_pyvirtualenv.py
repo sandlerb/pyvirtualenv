@@ -2,6 +2,7 @@ import os
 import platform
 import unittest
 import tempfile
+import subprocess
 
 from pyvirtualenv import Virtualenv
 
@@ -15,7 +16,7 @@ class PyVirtualenvTests(unittest.TestCase):
 
     def test_construct_makes_virtualenv(self):
         temp_env = tempfile.mkdtemp()
-        ve = Virtualenv(virtualenv=temp_env)
+        ve = Virtualenv(name=temp_env)
         temp_env_bin = os.path.join(
             temp_env, 'Scripts' if platform.system() == 'Windows' else 'bin')
         try:
@@ -25,14 +26,27 @@ class PyVirtualenvTests(unittest.TestCase):
 
     def test_destroy_removes_virtualenv(self):
         ve = Virtualenv()
-        temp_env = ve.virtualenv
+        temp_env = ve.name
         ve.destroy()
         self.assertFalse(os.path.isdir(temp_env))
 
     def test_run_runs_in_virtualenv(self):
-        ve = Virtualenv()
-        # install a package with pip? is there a better solution?
-        ve.destroy()
+        ve = Virtualenv(runner=subprocess.check_output)
+        try:
+            output = ve.run('which python', shell=True)
+            self.assertTrue(ve.name in output)
+        finally:
+            ve.destroy()
+
+    def test_use_existing_virtualenv(self):
+        venv = tempfile.mkdtemp()
+        os.system('virtualenv %s' % venv)
+        ve = Virtualenv(name=venv, runner=subprocess.check_output)
+        try:
+            output = ve.run('which python', shell=True)
+            self.assertTrue(ve.name in output)
+        finally:
+            ve.destroy()
 
 if __name__ == "__main__":
     unittest.main()

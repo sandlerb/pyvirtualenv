@@ -36,6 +36,11 @@ Use it as a context manger:
 TODO
 ```
 
+## Limitations
+
+Since the `run` method works by prepending the `command` parameter with a string
+to activate the virtualenv, `command` must be a string as well.
+
 ## How it works
 
 This just prepends each command with a virtualenv's activate script, but it
@@ -46,7 +51,6 @@ Tested on:
 
 ## TODO
 
-- [ ] Use an existing virtualenv
 - [ ] Use as a context manager
 - [ ] Test windows support (CMD, not powershell)
 

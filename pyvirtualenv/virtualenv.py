@@ -9,23 +9,24 @@ __version__ = '0.1.0'
 
 class Virtualenv(object):
 
-    def __init__(self, virtualenv=None, runner=None):
+    def __init__(self, name=None, runner=None):
         super(Virtualenv, self).__init__()
         if runner is None:
             runner = os.system
-        self.run = runner
+        self._runner = runner
 
-        if virtualenv is None:
-            # TODO guarantee that this dir is empty, should be
-            virtualenv = tempfile.mkdtemp()
-        # TODO only create if doesn't exist
-        Virtualenv._create_virtualenv(virtualenv)
-        self.virtualenv = virtualenv
+        if name is None:
+            name = tempfile.mkdtemp()
+
+        if not Virtualenv._is_virtualenv(name):
+            Virtualenv._create_virtualenv(name)
+
+        self.name = name
 
     @property
     def _bin_path(self):
         return os.path.join(
-            self.virtualenv,
+            self.name,
             'Scripts' if platform.system() == 'Windows' else 'bin')
 
     @property
@@ -48,22 +49,30 @@ class Virtualenv(object):
             print "in path"
         raise NotImplementedError()
 
-    def run(self, command):
+    def run(self, command, *args, **kwargs):
         """
         Run a command in the virtualenv represented by this object
 
         command -- A string reprsenting the command to be run
         """
         # if the user has called activate(), we probably don't want all of this
-        os.system("{activate} && {command}".format(
-            activate=self._activate_string, command=command))
+        return self._runner("{activate} && {command}".format(
+            activate=self._activate_string, command=command), *args, **kwargs)
 
     @staticmethod
     def _is_virtualenv(path):
-        path_bin = os.path.join(
-            path, 'Scripts' if platform.system() == 'Windows' else 'bin')
-        if not os.path.isdir(path) or 'activate' not in path_bin:
+        if platform.system() == 'Windows':
+            contents = ['Scripts', 'include', 'Lib']
+        else:
+            contents = ['bin', 'include', 'lib']
+        if not set(contents).issubset(set(os.listdir(path))):
             return False
+
+        bin_path = os.path.join(
+            path, 'Scripts' if platform.system() == 'Windows' else 'bin')
+        if not os.path.isdir(path) or 'activate' not in bin_path:
+            return False
+
         return True
 
     @staticmethod
@@ -75,7 +84,6 @@ class Virtualenv(object):
     def _create_virtualenv(name):
         """Create a new virtualenv"""
         # TODO add support for CLI switches and args
-        # TODO check if it already exists and is a virtualenv
         os.system("virtualenv {name}".format(name=name))
 
     @staticmethod
@@ -87,5 +95,5 @@ class Virtualenv(object):
         """Remove the virtualenv represented by this object from the
         file system"""
         # TODO call deactivate()
-        Virtualenv._destroy_virtualenv(self.virtualenv)
-        self.virtualenv = None
+        Virtualenv._destroy_virtualenv(self.name)
+        self.name = None
