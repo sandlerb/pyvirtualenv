@@ -2,6 +2,7 @@ import os
 import shutil
 import platform
 import tempfile
+import subprocess
 
 
 __version__ = '0.1.0'
@@ -10,9 +11,8 @@ __version__ = '0.1.0'
 class Virtualenv(object):
 
     def __init__(self, name=None, runner=None):
-        super(Virtualenv, self).__init__()
         if runner is None:
-            runner = os.system
+            runner = subprocess.check_output
         self._runner = runner
 
         if name is None:
@@ -32,7 +32,7 @@ class Virtualenv(object):
     @property
     def _activate_string(self):
         activate_path = os.path.join(self._bin_path, 'activate')
-        if platform.system == 'Windows':
+        if platform.system() == 'Windows':
             return os.path.join('.', activate_path)
         else:
             return 'source {0}'.format(activate_path)
@@ -56,8 +56,10 @@ class Virtualenv(object):
         command -- A string reprsenting the command to be run
         """
         # if the user has called activate(), we probably don't want all of this
-        return self._runner("{activate} && {command}".format(
-            activate=self._activate_string, command=command), *args, **kwargs)
+        activate = "{activate} && {command}".format(
+            activate=self._activate_string, command=command)
+        # TODO other runners will break from the **kwargs (i.e. os.system)
+        return self._runner(activate, *args, **kwargs)
 
     @staticmethod
     def _is_virtualenv(path):

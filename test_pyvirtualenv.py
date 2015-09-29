@@ -2,7 +2,6 @@ import os
 import platform
 import unittest
 import tempfile
-import subprocess
 
 from pyvirtualenv import Virtualenv
 
@@ -31,7 +30,7 @@ class PyVirtualenvTests(unittest.TestCase):
         self.assertFalse(os.path.isdir(temp_env))
 
     def test_run_runs_in_virtualenv(self):
-        ve = Virtualenv(runner=subprocess.check_output)
+        ve = Virtualenv()
         try:
             output = ve.run('which python', shell=True)
             self.assertTrue(ve.name in output)
@@ -41,7 +40,7 @@ class PyVirtualenvTests(unittest.TestCase):
     def test_use_existing_virtualenv(self):
         venv = tempfile.mkdtemp()
         os.system('virtualenv %s' % venv)
-        ve = Virtualenv(name=venv, runner=subprocess.check_output)
+        ve = Virtualenv(name=venv)
         try:
             output = ve.run('which python', shell=True)
             self.assertTrue(ve.name in output)
