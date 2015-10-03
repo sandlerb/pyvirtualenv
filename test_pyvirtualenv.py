@@ -47,5 +47,21 @@ class PyVirtualenvTests(unittest.TestCase):
         finally:
             ve.destroy()
 
+    def test_run_in_with_statement(self):
+        temp_venv = None
+        with Virtualenv() as ve:
+            temp_venv = ve.name
+            output = ve.run('which python', shell=True)
+            self.assertTrue(ve.name in output)
+
+        self.assertFalse(os.path.isdir(temp_venv))
+
+    def test_context_manager_removes_virtualenv(self):
+        temp_venv = None
+        with Virtualenv() as ve:
+            temp_venv = ve.name
+
+        self.assertFalse(os.path.isdir(temp_venv))
+
 if __name__ == "__main__":
     unittest.main()

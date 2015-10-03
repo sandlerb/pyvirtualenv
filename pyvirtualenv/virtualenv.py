@@ -4,7 +4,6 @@ import platform
 import tempfile
 import subprocess
 
-
 __version__ = '0.1.0'
 
 
@@ -99,3 +98,12 @@ class Virtualenv(object):
         # TODO call deactivate()
         Virtualenv._destroy_virtualenv(self.name)
         self.name = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            return False
+
+        self.destroy()
