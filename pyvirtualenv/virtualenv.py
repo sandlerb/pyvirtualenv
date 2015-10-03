@@ -78,7 +78,7 @@ class Virtualenv(object):
 
     @staticmethod
     def in_virtualenv():
-        """Returns True/False is a virtualenv is activated"""
+        """Returns True/False if a virtualenv is activated in the shell"""
         return 'VIRTUAL_ENV' in os.environ
 
     @staticmethod

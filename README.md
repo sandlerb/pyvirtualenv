@@ -21,7 +21,7 @@ ve.run('source script/release.sh')
 ve.destroy()
 ```
 
-Use it as a context manger:
+Use it as a context manager:
 
 ```
 with Virtualenv() as ve:
