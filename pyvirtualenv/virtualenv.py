@@ -72,7 +72,7 @@ class Virtualenv(object):
 
         bin_path = os.path.join(
             path, 'Scripts' if platform.system() == 'Windows' else 'bin')
-        if not os.path.isdir(path) or 'activate' not in bin_path:
+        if not os.path.isdir(path) or 'activate' not in os.listdir(bin_path):
             return False
 
         return True
